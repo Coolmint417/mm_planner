@@ -1,0 +1,190 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1180" viewBox="0 0 1800 1180">
+  <defs>
+    <style>
+      .bg { fill: #f7f8fb; }
+      .title { font: 700 34px Inter, Arial, sans-serif; fill: #172033; }
+      .subtitle { font: 500 16px Inter, Arial, sans-serif; fill: #5b6578; }
+      .section { font: 700 19px Inter, Arial, sans-serif; fill: #172033; }
+      .label { font: 700 16px Inter, Arial, sans-serif; fill: #172033; }
+      .small { font: 500 13px Inter, Arial, sans-serif; fill: #364154; }
+      .tiny { font: 500 12px Inter, Arial, sans-serif; fill: #5b6578; }
+      .mono { font: 600 12px "JetBrains Mono", Consolas, monospace; fill: #334155; }
+      .box { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.5; rx: 8; }
+      .model { fill: #f4efff; stroke: #a78bfa; }
+      .opt { fill: #fff4df; stroke: #f4b84f; }
+      .poly { fill: #eaf6ff; stroke: #7cc4f8; }
+      .flat { fill: #eefbf3; stroke: #76d39a; }
+      .ctrl { fill: #fff0f0; stroke: #f87171; }
+      .note { fill: #ffffff; stroke: #d7dde8; }
+      .axis { stroke: #334155; stroke-width: 2; fill: none; }
+      .grid { stroke: #d8dee9; stroke-width: 1; fill: none; }
+      .curve { stroke: #2563eb; stroke-width: 4; fill: none; }
+      .curve2 { stroke: #7c3aed; stroke-width: 3; fill: none; stroke-dasharray: 8 6; }
+      .dash { stroke: #94a3b8; stroke-width: 1.6; fill: none; stroke-dasharray: 7 5; }
+      .knot { fill: #ef4444; stroke: #991b1b; stroke-width: 1.5; }
+      .soft-knot { fill: #ffffff; stroke: #ef4444; stroke-width: 2; }
+      .arrow { stroke: #475569; stroke-width: 2.2; fill: none; marker-end: url(#arrow); }
+      .arrow-soft { stroke: #94a3b8; stroke-width: 1.8; fill: none; marker-end: url(#arrowSoft); stroke-dasharray: 6 5; }
+    </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#475569"/>
+    </marker>
+    <marker id="arrowSoft" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1800" height="1180"/>
+  <text class="title" x="70" y="64">Trajectory Optimizer and Differential Flatness Interface</text>
+  <text class="subtitle" x="70" y="94">Convert model waypoint actions into smooth flat-output polynomials, then recover full flight-control references</text>
+
+  <!-- Top data flow -->
+  <text class="section" x="70" y="150">Planner Outputs</text>
+  <rect class="box model" x="70" y="175" width="340" height="250"/>
+  <text class="label" x="95" y="208">Autoregressive action heads</text>
+  <text class="small" x="95" y="236">Use Gaussian mu as nominal knots</text>
+  <text class="mono" x="95" y="268">waypoints: [N, 4]</text>
+  <text class="tiny" x="95" y="288">[x, y, z, yaw] or relative deltas</text>
+  <text class="mono" x="95" y="320">velocity deltas: [N, 4]</text>
+  <text class="tiny" x="95" y="340">optional velocity/yaw-rate constraints</text>
+  <text class="mono" x="95" y="372">accel deltas: [N, 3]</text>
+  <text class="tiny" x="95" y="392">optional acceleration constraints</text>
+
+  <text class="section" x="500" y="150">Polynomial Optimization</text>
+  <rect class="box opt" x="500" y="175" width="460" height="250"/>
+  <text class="label" x="528" y="208">PolynomialTrajectoryOptimizer</text>
+  <text class="small" x="528" y="236">CasADi Opti + IPOPT solves coefficients</text>
+  <text class="mono" x="528" y="268">x(t), y(t), z(t): degree k_pos = 8</text>
+  <text class="mono" x="528" y="292">yaw(t): degree k_yaw = 5</text>
+  <text class="mono" x="528" y="324">segment_durations[i] = waypoint_dt</text>
+  <text class="tiny" x="528" y="348">or custom positive durations</text>
+  <text class="small" x="528" y="382">Unknown velocity/acceleration at a knot</text>
+  <text class="small" x="528" y="404">becomes continuity instead of a pinned value.</text>
+
+  <text class="section" x="1050" y="150">Smooth Trajectory</text>
+  <rect class="box poly" x="1050" y="175" width="330" height="250"/>
+  <text class="label" x="1075" y="208">PiecewisePolynomialTrajectory</text>
+  <text class="mono" x="1075" y="242">pos_coeffs: [S, k_pos+1, 3]</text>
+  <text class="mono" x="1075" y="266">yaw_coeffs: [S, k_yaw+1]</text>
+  <text class="mono" x="1075" y="300">evaluate(t) -></text>
+  <text class="small" x="1075" y="326">position, velocity, acceleration,</text>
+  <text class="small" x="1075" y="348">jerk, snap, yaw and derivatives</text>
+
+  <text class="section" x="1460" y="150">Flight Control Reference</text>
+  <rect class="box flat" x="1460" y="175" width="270" height="250"/>
+  <text class="label" x="1485" y="208">Differential Flatness</text>
+  <text class="small" x="1485" y="236">Flat outputs:</text>
+  <text class="mono" x="1485" y="262">sigma(t) = [x,y,z,yaw]</text>
+  <text class="small" x="1485" y="296">Recover constrained state:</text>
+  <text class="mono" x="1485" y="322">roll(t), pitch(t)</text>
+  <text class="mono" x="1485" y="346">attitude R(t), omega(t)</text>
+  <text class="mono" x="1485" y="370">thrust / feedforward acc</text>
+
+  <!-- Objective and constraints -->
+  <rect class="box note" x="500" y="470" width="560" height="210"/>
+  <text class="section" x="530" y="510">Optimization Problem</text>
+  <text class="mono" x="530" y="548">minimize  Σ_axes ∫ || d⁴p_axis / dt⁴ ||² dt</text>
+  <text class="mono" x="530" y="574">        + w_yaw ∫ || d⁴yaw / dt⁴ ||² dt</text>
+  <text class="small" x="530" y="610">Subject to waypoint interpolation at every knot</text>
+  <text class="small" x="530" y="634">Optional velocity, acceleration, yaw-rate constraints</text>
+  <text class="small" x="530" y="658">Internal segment joins enforce derivative continuity through order 4.</text>
+
+  <rect class="box note" x="70" y="470" width="340" height="210"/>
+  <text class="section" x="100" y="510">Config Knobs</text>
+  <text class="mono" x="100" y="548">k_pos = 8</text>
+  <text class="small" x="195" y="548">degree for x/y/z</text>
+  <text class="mono" x="100" y="578">k_yaw = 5</text>
+  <text class="small" x="195" y="578">degree for yaw</text>
+  <text class="mono" x="100" y="608">waypoint_dt = 0.2</text>
+  <text class="small" x="255" y="608">default segment time</text>
+  <text class="mono" x="100" y="638">snap_weight_pos</text>
+  <text class="mono" x="100" y="664">snap_weight_yaw</text>
+
+  <rect class="box ctrl" x="1460" y="470" width="270" height="210"/>
+  <text class="section" x="1490" y="510">Lower Controller</text>
+  <text class="small" x="1490" y="546">SE3 / attitude / rate controller</text>
+  <text class="mono" x="1490" y="578">target position</text>
+  <text class="mono" x="1490" y="604">target velocity</text>
+  <text class="mono" x="1490" y="630">target acceleration</text>
+  <text class="mono" x="1490" y="656">target attitude + omega</text>
+
+  <!-- Interpolation diagram -->
+  <text class="section" x="70" y="745">Piecewise Polynomial Interpolation</text>
+  <rect class="box" x="70" y="770" width="1040" height="320"/>
+
+  <!-- Plot grid -->
+  <path class="grid" d="M150 1020 L1030 1020"/>
+  <path class="grid" d="M150 960 L1030 960"/>
+  <path class="grid" d="M150 900 L1030 900"/>
+  <path class="grid" d="M150 840 L1030 840"/>
+  <path class="grid" d="M270 820 L270 1040"/>
+  <path class="grid" d="M430 820 L430 1040"/>
+  <path class="grid" d="M590 820 L590 1040"/>
+  <path class="grid" d="M750 820 L750 1040"/>
+  <path class="grid" d="M910 820 L910 1040"/>
+  <path class="axis" d="M150 1040 L1030 1040"/>
+  <path class="axis" d="M150 1040 L150 820"/>
+  <text class="tiny" x="1010" y="1065">t</text>
+  <text class="tiny" x="118" y="830">flat output</text>
+
+  <path class="curve" d="M150 1005 C210 960 230 915 270 920 C325 928 360 1008 430 980 C500 952 520 842 590 855 C655 868 690 950 750 930 C820 907 850 850 910 875 C965 900 995 970 1030 948"/>
+  <path class="curve2" d="M150 970 C230 935 250 885 270 890 C350 905 370 955 430 945 C505 932 530 880 590 890 C660 902 690 918 750 900 C820 878 865 882 910 902 C955 922 990 930 1030 920"/>
+
+  <circle class="knot" cx="150" cy="1005" r="8"/>
+  <circle class="knot" cx="270" cy="920" r="8"/>
+  <circle class="knot" cx="430" cy="980" r="8"/>
+  <circle class="knot" cx="590" cy="855" r="8"/>
+  <circle class="knot" cx="750" cy="930" r="8"/>
+  <circle class="knot" cx="910" cy="875" r="8"/>
+  <circle class="soft-knot" cx="1030" cy="948" r="8"/>
+
+  <text class="mono" x="142" y="1070">t0</text>
+  <text class="mono" x="260" y="1070">t1</text>
+  <text class="mono" x="420" y="1070">t2</text>
+  <text class="mono" x="580" y="1070">t3</text>
+  <text class="mono" x="740" y="1070">t4</text>
+  <text class="mono" x="900" y="1070">t5</text>
+  <text class="mono" x="1017" y="1070">t6</text>
+
+  <path class="dash" d="M270 820 L270 1040"/>
+  <path class="dash" d="M430 820 L430 1040"/>
+  <path class="dash" d="M590 820 L590 1040"/>
+  <path class="dash" d="M750 820 L750 1040"/>
+  <path class="dash" d="M910 820 L910 1040"/>
+  <text class="small" x="180" y="815">segment 0</text>
+  <text class="small" x="315" y="815">segment 1</text>
+  <text class="small" x="475" y="815">segment 2</text>
+  <text class="small" x="635" y="815">segment 3</text>
+  <text class="small" x="795" y="815">segment 4</text>
+  <text class="small" x="945" y="815">segment 5</text>
+
+  <text class="label" x="710" y="990">C4 continuity at joins</text>
+  <text class="mono" x="710" y="1018">p, p', p'', p''', p'''' match</text>
+  <text class="tiny" x="710" y="1042">If velocity or acceleration is pinned, that derivative follows the target.</text>
+
+  <!-- Differential flatness detail -->
+  <text class="section" x="1180" y="745">Differential Flatness Module</text>
+  <rect class="box flat" x="1180" y="770" width="550" height="320"/>
+  <text class="label" x="1210" y="805">Why only plan x(t), y(t), z(t), yaw(t)?</text>
+  <text class="small" x="1210" y="836">A quadrotor is a constrained dynamic system:</text>
+  <text class="mono" x="1210" y="862">state = [x,y,z, roll,pitch,yaw, velocities, rates]</text>
+  <text class="small" x="1210" y="895">Differential flatness makes roll and pitch explicit functions of:</text>
+  <text class="mono" x="1210" y="922">x(t), y(t), z(t), yaw(t)</text>
+  <text class="mono" x="1210" y="948">and their derivatives: v, a, jerk, snap</text>
+  <text class="small" x="1210" y="982">Therefore the optimizer plans the four flat outputs,</text>
+  <text class="small" x="1210" y="1006">then this module reconstructs full references:</text>
+  <text class="mono" x="1210" y="1034">pos, vel, acc, attitude R, roll/pitch/yaw, omega</text>
+  <text class="tiny" x="1210" y="1062">These references can feed the lower-level flight controller directly.</text>
+
+  <!-- Connections -->
+  <path class="arrow" d="M410 300 C455 300 455 300 500 300"/>
+  <path class="arrow" d="M960 300 C1000 300 1010 300 1050 300"/>
+  <path class="arrow" d="M1380 300 C1415 300 1425 300 1460 300"/>
+  <path class="arrow" d="M1595 425 C1595 445 1595 450 1595 470"/>
+  <path class="arrow-soft" d="M1215 425 C1215 650 1235 700 1248 770"/>
+  <path class="arrow-soft" d="M890 425 C875 600 840 700 770 770"/>
+  <path class="arrow" d="M1110 930 C1140 930 1150 930 1180 930"/>
+
+  <!-- Footer -->
+  <text class="tiny" x="70" y="1140">File: docs/trajectory_optimizer_dataflow.svg</text>
+</svg>

@@ -1,0 +1,165 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1160" viewBox="0 0 1800 1160">
+  <defs>
+    <style>
+      .bg { fill: #f7f8fb; }
+      .title { font: 700 34px Inter, Arial, sans-serif; fill: #172033; }
+      .subtitle { font: 500 16px Inter, Arial, sans-serif; fill: #5b6578; }
+      .section { font: 700 19px Inter, Arial, sans-serif; fill: #172033; }
+      .label { font: 700 16px Inter, Arial, sans-serif; fill: #172033; }
+      .small { font: 500 13px Inter, Arial, sans-serif; fill: #364154; }
+      .tiny { font: 500 12px Inter, Arial, sans-serif; fill: #5b6578; }
+      .mono { font: 600 12px "JetBrains Mono", Consolas, monospace; fill: #334155; }
+      .box { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.5; rx: 8; }
+      .input { fill: #eaf6ff; stroke: #7cc4f8; }
+      .encoder { fill: #eefbf3; stroke: #76d39a; }
+      .fusion { fill: #fff4df; stroke: #f4b84f; }
+      .head { fill: #f4efff; stroke: #a78bfa; }
+      .output { fill: #fff0f0; stroke: #f87171; }
+      .opt { fill: #ecfeff; stroke: #22b8cf; }
+      .note { fill: #ffffff; stroke: #d7dde8; }
+      .arrow { stroke: #475569; stroke-width: 2.2; fill: none; marker-end: url(#arrow); }
+      .arrow-soft { stroke: #94a3b8; stroke-width: 1.8; fill: none; marker-end: url(#arrowSoft); stroke-dasharray: 6 5; }
+    </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#475569"/>
+    </marker>
+    <marker id="arrowSoft" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1800" height="1160"/>
+  <text class="title" x="70" y="64">Route-Conditioned Multimodal Flying-Crawling Drone Planner</text>
+  <text class="subtitle" x="70" y="94">Data flow, tensor shapes, probabilistic heads, and main configuration parameters</text>
+
+  <!-- Inputs -->
+  <text class="section" x="70" y="150">Inputs</text>
+  <rect class="box input" x="70" y="175" width="280" height="92"/>
+  <text class="label" x="92" y="207">RGB observation</text>
+  <text class="mono" x="92" y="233">rgb: [B, 3, H, W]</text>
+  <text class="tiny" x="92" y="252">H=W=image_size, default 224</text>
+
+  <rect class="box input" x="70" y="300" width="280" height="116"/>
+  <text class="label" x="92" y="332">Motion history</text>
+  <text class="mono" x="92" y="358">traj_mode_ids: [B, T]</text>
+  <text class="mono" x="92" y="378">traj_continuous: [B, T, 16]</text>
+  <text class="tiny" x="92" y="398">position, velocity, accel, quat, omega</text>
+
+  <rect class="box input" x="70" y="450" width="280" height="116"/>
+  <text class="label" x="92" y="482">Task route</text>
+  <text class="mono" x="92" y="508">task_waypoints: [B, M, 7]</text>
+  <text class="mono" x="92" y="528">mask: [B, M] optional</text>
+  <text class="tiny" x="92" y="548">relative pos, yaw, dist, flags</text>
+
+  <!-- Encoders -->
+  <text class="section" x="440" y="150">Modality Encoders</text>
+  <rect class="box encoder" x="440" y="175" width="330" height="110"/>
+  <text class="label" x="462" y="207">DINOv2VisionEncoder</text>
+  <text class="small" x="462" y="234">DINOv2 ViT-B/14 backbone</text>
+  <text class="small" x="462" y="256">patch attention pooling or CLS token</text>
+  <text class="mono" x="462" y="276">z_img: [B, vision_output_dim]</text>
+
+  <rect class="box encoder" x="440" y="322" width="330" height="120"/>
+  <text class="label" x="462" y="354">HistoricalTrajectoryEncoder</text>
+  <text class="small" x="462" y="381">mode embedding + continuous state</text>
+  <text class="small" x="462" y="403">TransformerEncoder + attention pool</text>
+  <text class="mono" x="462" y="423">z_traj: [B, traj_token_dim]</text>
+
+  <rect class="box encoder" x="440" y="480" width="330" height="120"/>
+  <text class="label" x="462" y="512">TaskWaypointEncoder</text>
+  <text class="small" x="462" y="539">waypoint projection + position emb</text>
+  <text class="small" x="462" y="561">TransformerEncoder + masked pool</text>
+  <text class="mono" x="462" y="581">z_waypoint: [B, waypoint_token_dim]</text>
+
+  <!-- Fusion -->
+  <text class="section" x="865" y="150">Fusion</text>
+  <rect class="box fusion" x="850" y="280" width="330" height="160"/>
+  <text class="label" x="875" y="316">MultimodalFusionTransformer</text>
+  <text class="small" x="875" y="344">project each modality to fusion_dim</text>
+  <text class="small" x="875" y="366">tokens: [CLS], image, trajectory, route</text>
+  <text class="small" x="875" y="388">TransformerEncoder over modality tokens</text>
+  <text class="mono" x="875" y="418">h: [B, fusion_dim]</text>
+
+  <!-- Heads -->
+  <text class="section" x="1260" y="150">Prediction Heads</text>
+  <rect class="box head" x="1250" y="170" width="345" height="82"/>
+  <text class="label" x="1272" y="203">ModePredictionHead</text>
+  <text class="mono" x="1272" y="229">mode_logits: [B, num_modes]</text>
+
+  <rect class="box head" x="1250" y="275" width="345" height="112"/>
+  <text class="label" x="1272" y="307">AutoregressiveWaypointHead</text>
+  <text class="small" x="1272" y="334">Gaussian policy over future waypoints</text>
+  <text class="mono" x="1272" y="358">mu/sigma: [B, N, 4]</text>
+  <text class="tiny" x="1272" y="377">[dx, dy, dz, dyaw]</text>
+
+  <rect class="box head" x="1250" y="410" width="345" height="112"/>
+  <text class="label" x="1272" y="442">FlightVelocityDeltaHead</text>
+  <text class="small" x="1272" y="469">autoregressive Gaussian policy</text>
+  <text class="mono" x="1272" y="493">mu/sigma: [B, N, 4]</text>
+  <text class="tiny" x="1272" y="512">[dvx, dvy, dvz, ddyaw]</text>
+
+  <rect class="box head" x="1250" y="545" width="345" height="112"/>
+  <text class="label" x="1272" y="577">FlightAccelerationDeltaHead</text>
+  <text class="small" x="1272" y="604">autoregressive Gaussian policy</text>
+  <text class="mono" x="1272" y="628">mu/sigma: [B, N, 3]</text>
+  <text class="tiny" x="1272" y="647">[dax, day, daz]</text>
+
+  <rect class="box head" x="1250" y="680" width="345" height="92"/>
+  <text class="label" x="1272" y="712">CrawlActionHead</text>
+  <text class="mono" x="1272" y="738">crawl_action: [B, 3]</text>
+  <text class="tiny" x="1272" y="757">[vx_surface, vy_surface, yaw_rate]</text>
+
+  <rect class="box head" x="1250" y="795" width="345" height="126"/>
+  <text class="label" x="1272" y="827">TransitionHead</text>
+  <text class="mono" x="1272" y="853">contact_pos: [B, 3]</text>
+  <text class="mono" x="1272" y="873">surface_normal: [B, 3]</text>
+  <text class="mono" x="1272" y="893">yaw / approach_speed: [B, 1]</text>
+
+  <!-- Optimizer -->
+  <rect class="box opt" x="850" y="720" width="330" height="168"/>
+  <text class="label" x="875" y="754">Trajectory Optimizer</text>
+  <text class="small" x="875" y="782">post-process model action distribution</text>
+  <text class="small" x="875" y="804">piecewise polynomial connection</text>
+  <text class="mono" x="875" y="830">x,y,z: degree k_pos=8</text>
+  <text class="mono" x="875" y="850">yaw: degree k_yaw=5</text>
+  <text class="tiny" x="875" y="873">minimize integral of squared 4th derivative</text>
+
+  <!-- Parameter panel -->
+  <rect class="box note" x="70" y="675" width="700" height="390"/>
+  <text class="section" x="100" y="715">Symbol and Parameter Meaning</text>
+  <text class="mono" x="100" y="752">B</text><text class="small" x="150" y="752">batch size</text>
+  <text class="mono" x="100" y="778">T</text><text class="small" x="150" y="778">n_traj_encoder, history length, default 8</text>
+  <text class="mono" x="100" y="804">M</text><text class="small" x="150" y="804">n_waypoints, task route length, default 5</text>
+  <text class="mono" x="100" y="830">N</text><text class="small" x="150" y="830">pred_num_flight_waypoints, future horizon, default 10</text>
+  <text class="mono" x="100" y="856">H,W</text><text class="small" x="150" y="856">image height and width, default image_size=224</text>
+  <text class="mono" x="100" y="882">mu</text><text class="small" x="150" y="882">mean of Gaussian continuous-action distribution</text>
+  <text class="mono" x="100" y="908">sigma</text><text class="small" x="150" y="908">std dev, softplus(raw_sigma)+min_action_sigma</text>
+  <text class="mono" x="100" y="934">fusion_dim</text><text class="small" x="210" y="934">shared latent size for multimodal fusion, default 256</text>
+  <text class="mono" x="100" y="960">teacher forcing</text><text class="small" x="250" y="960">during training, feed ground-truth previous action into AR heads</text>
+  <text class="mono" x="100" y="986">k_pos, k_yaw</text><text class="small" x="230" y="986">polynomial degree for trajectory post-processing</text>
+  <text class="mono" x="100" y="1012">C4 continuity</text><text class="small" x="230" y="1012">position/yaw derivatives match through 4th derivative at knots</text>
+  <text class="mono" x="100" y="1038">motion modes</text><text class="small" x="230" y="1038">FLY, CRAWL, LAND, TAKEOFF, ATTACH, DETACH, HOVER</text>
+
+  <!-- Connections -->
+  <path class="arrow" d="M350 221 C385 221 400 230 440 230"/>
+  <path class="arrow" d="M350 358 C388 358 400 382 440 382"/>
+  <path class="arrow" d="M350 508 C388 508 400 540 440 540"/>
+
+  <path class="arrow" d="M770 230 C820 230 820 335 850 335"/>
+  <path class="arrow" d="M770 382 C812 382 820 360 850 360"/>
+  <path class="arrow" d="M770 540 C820 540 820 385 850 385"/>
+
+  <path class="arrow" d="M1180 360 C1215 360 1215 211 1250 211"/>
+  <path class="arrow" d="M1180 360 C1215 360 1215 331 1250 331"/>
+  <path class="arrow" d="M1180 360 C1215 360 1215 466 1250 466"/>
+  <path class="arrow" d="M1180 360 C1215 360 1215 601 1250 601"/>
+  <path class="arrow" d="M1180 360 C1215 360 1215 726 1250 726"/>
+  <path class="arrow" d="M1180 360 C1215 360 1215 858 1250 858"/>
+
+  <path class="arrow-soft" d="M1420 387 C1420 710 1180 765 1180 805"/>
+  <path class="arrow-soft" d="M1420 522 C1400 720 1180 785 1180 825"/>
+  <path class="arrow-soft" d="M1420 657 C1380 730 1180 805 1180 845"/>
+
+  <!-- Footer -->
+  <text class="tiny" x="70" y="1120">File: docs/planner_model_dataflow.svg</text>
+</svg>

@@ -1,0 +1,11 @@
+__pycache__/
+
+# AI agents 
+.codex/
+.agents/
+
+.vscode/
+.torch_cache/
+
+# collected clip data
+data/

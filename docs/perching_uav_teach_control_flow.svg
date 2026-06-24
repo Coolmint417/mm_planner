@@ -1,0 +1,215 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1900" height="1220" viewBox="0 0 1900 1220">
+  <defs>
+    <style>
+      .bg { fill: #f7f8fb; }
+      .title { font: 700 34px Inter, Arial, sans-serif; fill: #172033; }
+      .subtitle { font: 500 16px Inter, Arial, sans-serif; fill: #5b6578; }
+      .section { font: 700 19px Inter, Arial, sans-serif; fill: #172033; }
+      .label { font: 700 16px Inter, Arial, sans-serif; fill: #172033; }
+      .small { font: 500 13px Inter, Arial, sans-serif; fill: #364154; }
+      .tiny { font: 500 12px Inter, Arial, sans-serif; fill: #5b6578; }
+      .mono { font: 600 12px "JetBrains Mono", Consolas, monospace; fill: #334155; }
+      .box { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.5; rx: 8; }
+      .input { fill: #eaf6ff; stroke: #7cc4f8; }
+      .state { fill: #fff4df; stroke: #f4b84f; }
+      .mode { fill: #eefbf3; stroke: #76d39a; }
+      .controller { fill: #f4efff; stroke: #a78bfa; }
+      .output { fill: #fff0f0; stroke: #f87171; }
+      .record { fill: #ecfeff; stroke: #22b8cf; }
+      .note { fill: #ffffff; stroke: #d7dde8; }
+      .arrow { stroke: #475569; stroke-width: 2.2; fill: none; marker-end: url(#arrow); }
+      .arrow-soft { stroke: #94a3b8; stroke-width: 1.8; fill: none; marker-end: url(#arrowSoft); stroke-dasharray: 6 5; }
+      .loop { stroke: #f97316; stroke-width: 2; fill: none; marker-end: url(#arrowOrange); }
+    </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#475569"/>
+    </marker>
+    <marker id="arrowSoft" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/>
+    </marker>
+    <marker id="arrowOrange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#f97316"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1900" height="1220"/>
+  <text class="title" x="70" y="64">Control State Machine and Controller Cascade</text>
+  <text class="subtitle" x="70" y="94">MuJoCo joystick teaching loop: mode switching, automatic takeoff/landing, cascaded controllers, mixer output, and clip recording</text>
+
+  <!-- Runtime entry -->
+  <text class="section" x="70" y="150">Runtime Loop</text>
+  <rect class="box input" x="70" y="175" width="300" height="168"/>
+  <text class="label" x="95" y="208">viewer.launch(loader)</text>
+  <text class="small" x="95" y="236">load_callback()</text>
+  <text class="mono" x="95" y="264">MjModel.from_xml_path(scene.xml)</text>
+  <text class="mono" x="95" y="288">MjData(model)</text>
+  <text class="small" x="95" y="318">reset controllers and state</text>
+
+  <rect class="box input" x="70" y="380" width="300" height="206"/>
+  <text class="label" x="95" y="413">control_callback(m, d)</text>
+  <text class="small" x="95" y="441">Runs every MuJoCo control step</text>
+  <text class="mono" x="95" y="471">dt = d.time - last_time</text>
+  <text class="mono" x="95" y="495">joystick.update()</text>
+  <text class="mono" x="95" y="519">_update_recording_trigger(d)</text>
+  <text class="tiny" x="95" y="548">All flight modes share sensor parsing,</text>
+  <text class="tiny" x="95" y="568">gyro filtering, rate control, and mixer.</text>
+
+  <!-- Inputs -->
+  <text class="section" x="445" y="150">Inputs</text>
+  <rect class="box input" x="445" y="175" width="330" height="206"/>
+  <text class="label" x="470" y="208">Joystick axes</text>
+  <text class="mono" x="470" y="238">0 roll       -> roll / lateral speed</text>
+  <text class="mono" x="470" y="262">1 pitch      -> pitch / forward speed</text>
+  <text class="mono" x="470" y="286">2 throttle   -> thrust / vertical speed</text>
+  <text class="mono" x="470" y="310">3 yaw        -> yaw_rate</text>
+  <text class="mono" x="470" y="334">4 record     -> clip begin/end</text>
+  <text class="mono" x="470" y="358">5 ctrl_mode  -> angle/alt/position</text>
+
+  <rect class="box input" x="445" y="415" width="330" height="171"/>
+  <text class="label" x="470" y="448">MuJoCo state and sensors</text>
+  <text class="mono" x="470" y="478">qpos[:3]  position</text>
+  <text class="mono" x="470" y="502">qvel[:3]  linear velocity</text>
+  <text class="mono" x="470" y="526">sensordata[0:3] gyro</text>
+  <text class="mono" x="470" y="550">sensordata[6:10] quaternion</text>
+  <text class="tiny" x="470" y="575">gyro -> GyroLowPassFilter -> omega</text>
+
+  <!-- Mode state machine -->
+  <text class="section" x="850" y="150">Control Mode State Machine</text>
+  <rect class="box state" x="850" y="175" width="360" height="110"/>
+  <text class="label" x="875" y="210">CTRL_MODE_ANGLE</text>
+  <text class="mono" x="875" y="238">axis5 &lt; -0.5</text>
+  <text class="tiny" x="875" y="262">Manual attitude command</text>
+
+  <rect class="box state" x="850" y="325" width="360" height="110"/>
+  <text class="label" x="875" y="360">CTRL_MODE_ALTITUDE</text>
+  <text class="mono" x="875" y="388">-0.5 &lt;= axis5 &lt;= 0.5</text>
+  <text class="tiny" x="875" y="412">Attitude command + altitude hold</text>
+
+  <rect class="box state" x="850" y="475" width="360" height="110"/>
+  <text class="label" x="875" y="510">CTRL_MODE_POSITION</text>
+  <text class="mono" x="875" y="538">axis5 &gt; 0.5</text>
+  <text class="tiny" x="875" y="562">Velocity integration or auto takeoff/land</text>
+
+  <path class="loop" d="M1030 285 C990 300 990 310 1030 325"/>
+  <path class="loop" d="M1030 435 C990 450 990 460 1030 475"/>
+  <path class="loop" d="M1210 530 C1280 520 1280 240 1210 230"/>
+  <text class="tiny" x="1235" y="368">axis5 selects requested_control_mode</text>
+
+  <!-- Mode-specific command generation -->
+  <text class="section" x="1285" y="150">Mode-Specific Command Generation</text>
+  <rect class="box mode" x="1285" y="175" width="405" height="136"/>
+  <text class="label" x="1310" y="208">Angle mode</text>
+  <text class="mono" x="1310" y="238">roll = axis0 * MAX_ROLL</text>
+  <text class="mono" x="1310" y="262">pitch = axis1 * MAX_PITCH</text>
+  <text class="mono" x="1310" y="286">thrust = throttle * HOVER_THRUST / 0.5</text>
+
+  <rect class="box mode" x="1285" y="345" width="405" height="136"/>
+  <text class="label" x="1310" y="378">Altitude mode</text>
+  <text class="mono" x="1310" y="408">roll / pitch / yaw_rate from joystick</text>
+  <text class="mono" x="1310" y="432">AltitudeHoldPIDController.update(z, throttle)</text>
+  <text class="tiny" x="1310" y="456">Output is thrust_command.</text>
+
+  <rect class="box mode" x="1285" y="515" width="405" height="170"/>
+  <text class="label" x="1310" y="548">Position mode</text>
+  <text class="mono" x="1310" y="578">target_velocity = joystick_to_world_velocity()</text>
+  <text class="mono" x="1310" y="602">position_target += target_velocity * dt</text>
+  <text class="mono" x="1310" y="626">or auto mode overrides joystick</text>
+  <text class="tiny" x="1310" y="654">SE3Controller maps target state to thrust and target_omega.</text>
+
+  <!-- Cascade -->
+  <text class="section" x="70" y="665">Controller Cascade</text>
+  <rect class="box controller" x="70" y="690" width="270" height="116"/>
+  <text class="label" x="95" y="723">AttitudePIDController</text>
+  <text class="small" x="95" y="751">Angle/altitude path</text>
+  <text class="mono" x="95" y="779">target_rotation -> target_omega</text>
+
+  <rect class="box controller" x="390" y="690" width="270" height="116"/>
+  <text class="label" x="415" y="723">SE3Controller</text>
+  <text class="small" x="415" y="751">Position path</text>
+  <text class="mono" x="415" y="779">target_state -> thrust, omega</text>
+
+  <rect class="box controller" x="710" y="690" width="270" height="116"/>
+  <text class="label" x="735" y="723">RatePIDController</text>
+  <text class="small" x="735" y="751">Shared inner loop</text>
+  <text class="mono" x="735" y="779">thrust + target_omega -> wrench</text>
+
+  <rect class="box controller" x="1030" y="690" width="270" height="116"/>
+  <text class="label" x="1055" y="723">Motor Mixer</text>
+  <text class="small" x="1055" y="751">Quadrotor allocation</text>
+  <text class="mono" x="1055" y="779">wrench -> motor_speed_square[4]</text>
+
+  <rect class="box output" x="1350" y="690" width="270" height="116"/>
+  <text class="label" x="1375" y="723">MuJoCo Actuators</text>
+  <text class="mono" x="1375" y="755">d.ctrl[1:5] = 0</text>
+  <text class="mono" x="1375" y="779">d.ctrl[5:9] = motors</text>
+
+  <path class="arrow" d="M340 748 C360 748 370 748 390 748"/>
+  <path class="arrow" d="M660 748 C685 748 685 748 710 748"/>
+  <path class="arrow" d="M980 748 C1005 748 1005 748 1030 748"/>
+  <path class="arrow" d="M1300 748 C1325 748 1325 748 1350 748"/>
+
+  <path class="arrow-soft" d="M1490 311 C1490 620 210 620 210 690"/>
+  <path class="arrow-soft" d="M1490 481 C1490 625 210 625 210 690"/>
+  <path class="arrow-soft" d="M1490 685 C1490 665 525 665 525 690"/>
+  <path class="arrow-soft" d="M1490 311 C1490 645 845 645 845 690"/>
+  <path class="arrow-soft" d="M1490 481 C1490 650 845 650 845 690"/>
+  <path class="arrow-soft" d="M1490 685 C1490 655 845 655 845 690"/>
+
+  <!-- Auto takeoff landing -->
+  <text class="section" x="70" y="875">Position-Mode Auto Takeoff / Landing Sub-State Machine</text>
+  <rect class="box state" x="70" y="900" width="310" height="178"/>
+  <text class="label" x="95" y="934">POSITION_AUTO_NONE</text>
+  <text class="small" x="95" y="964">Joystick commands are active</text>
+  <text class="mono" x="95" y="994">axis7 neg -> pos: TAKEOFF</text>
+  <text class="mono" x="95" y="1018">axis7 pos -> neg: LAND</text>
+  <text class="tiny" x="95" y="1048">Triggers are checked only while auto mode is NONE.</text>
+
+  <rect class="box state" x="455" y="900" width="340" height="178"/>
+  <text class="label" x="480" y="934">POSITION_AUTO_TAKEOFF</text>
+  <text class="small" x="480" y="964">Joystick input is blocked</text>
+  <text class="mono" x="480" y="994">target_z = max(1.0, z + 0.8)</text>
+  <text class="mono" x="480" y="1018">target_velocity = TAKEOFF_KV * error</text>
+  <text class="tiny" x="480" y="1048">Exit when z error and speed are small.</text>
+
+  <rect class="box state" x="870" y="900" width="340" height="178"/>
+  <text class="label" x="895" y="934">POSITION_AUTO_LAND</text>
+  <text class="small" x="895" y="964">Joystick input is blocked</text>
+  <text class="mono" x="895" y="994">target_velocity = [0, 0, -0.25]</text>
+  <text class="mono" x="895" y="1018">position_target.z -= speed * dt</text>
+  <text class="tiny" x="895" y="1048">Exit after low speed persists for LAND_STILL_TIME.</text>
+
+  <path class="arrow" d="M380 970 C410 970 425 970 455 970"/>
+  <text class="tiny" x="390" y="952">axis7 - to +</text>
+  <path class="arrow" d="M380 1022 C585 1120 780 1120 870 1022"/>
+  <text class="tiny" x="580" y="1128">axis7 + to -</text>
+  <path class="arrow" d="M625 900 C610 850 230 850 225 900"/>
+  <text class="tiny" x="315" y="845">takeoff complete</text>
+  <path class="arrow" d="M1040 900 C1010 830 255 830 225 900"/>
+  <text class="tiny" x="650" y="820">landing complete</text>
+
+  <!-- Recorder -->
+  <text class="section" x="1300" y="875">Clip Recording Side Path</text>
+  <rect class="box record" x="1300" y="900" width="430" height="178"/>
+  <text class="label" x="1325" y="934">ClipRecorder</text>
+  <text class="mono" x="1325" y="964">axis4 &gt; 0: begin()</text>
+  <text class="mono" x="1325" y="988">axis4 &lt; 0: end() / flush()</text>
+  <text class="small" x="1325" y="1020">Stores rgb, qpos, qvel, ctrl, sensordata,</text>
+  <text class="small" x="1325" y="1042">mode_id, joystick_axes, commands, position_target,</text>
+  <text class="small" x="1325" y="1064">position_auto_mode.</text>
+
+  <!-- Cross-flow arrows -->
+  <path class="arrow" d="M370 260 C405 260 410 260 445 260"/>
+  <path class="arrow" d="M775 280 C810 280 815 280 850 280"/>
+  <path class="arrow" d="M775 500 C805 500 820 500 850 500"/>
+  <path class="arrow" d="M1210 230 C1245 230 1250 235 1285 235"/>
+  <path class="arrow" d="M1210 380 C1245 380 1250 405 1285 405"/>
+  <path class="arrow" d="M1210 530 C1245 530 1250 575 1285 575"/>
+  <path class="arrow-soft" d="M230 586 C230 650 1530 815 1530 900"/>
+
+  <!-- Notes -->
+  <rect class="box note" x="1180" y="1088" width="550" height="72"/>
+  <text class="label" x="1205" y="1118">Shared output contract</text>
+  <text class="small" x="1205" y="1144">Every mode produces thrust_command and target_omega before the shared rate loop and mixer.</text>
+
+  <text class="tiny" x="70" y="1175">File: docs/perching_uav_teach_control_flow.svg</text>
+</svg>

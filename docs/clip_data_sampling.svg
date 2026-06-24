@@ -1,0 +1,179 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1080" viewBox="0 0 1800 1080">
+  <defs>
+    <style>
+      .bg { fill: #f7f8fb; }
+      .title { font: 700 34px Inter, Arial, sans-serif; fill: #172033; }
+      .subtitle { font: 500 16px Inter, Arial, sans-serif; fill: #5b6578; }
+      .section { font: 700 19px Inter, Arial, sans-serif; fill: #172033; }
+      .label { font: 700 16px Inter, Arial, sans-serif; fill: #172033; }
+      .small { font: 500 13px Inter, Arial, sans-serif; fill: #364154; }
+      .tiny { font: 500 12px Inter, Arial, sans-serif; fill: #5b6578; }
+      .mono { font: 600 12px "JetBrains Mono", Consolas, monospace; fill: #334155; }
+      .box { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.5; rx: 8; }
+      .clip { fill: #eaf6ff; stroke: #7cc4f8; }
+      .sample { fill: #fff4df; stroke: #f4b84f; }
+      .history { fill: #eefbf3; stroke: #76d39a; }
+      .future { fill: #f4efff; stroke: #a78bfa; }
+      .batch { fill: #fff0f0; stroke: #f87171; }
+      .note { fill: #ffffff; stroke: #d7dde8; }
+      .line { stroke: #64748b; stroke-width: 2; fill: none; }
+      .axis { stroke: #334155; stroke-width: 2; fill: none; }
+      .dash { stroke: #94a3b8; stroke-width: 1.6; fill: none; stroke-dasharray: 7 5; }
+      .anchor { stroke: #ef4444; stroke-width: 3; fill: none; }
+      .arrow { stroke: #475569; stroke-width: 2.2; fill: none; marker-end: url(#arrow); }
+      .arrow-soft { stroke: #94a3b8; stroke-width: 1.8; fill: none; marker-end: url(#arrowSoft); stroke-dasharray: 6 5; }
+      .dot-history { fill: #22c55e; stroke: #15803d; stroke-width: 1; }
+      .dot-future { fill: #8b5cf6; stroke: #6d28d9; stroke-width: 1; }
+      .dot-anchor { fill: #ef4444; stroke: #991b1b; stroke-width: 1; }
+    </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#475569"/>
+    </marker>
+    <marker id="arrowSoft" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1800" height="1080"/>
+  <text class="title" x="70" y="64">Clip-to-Batch Temporal Sampling</text>
+  <text class="subtitle" x="70" y="94">Randomly choose an anchor timestamp, crop motion history and future supervision windows, then build planner training tensors</text>
+
+  <!-- Raw clip files -->
+  <text class="section" x="70" y="150">Recorded Clip</text>
+  <rect class="box clip" x="70" y="175" width="340" height="250"/>
+  <text class="label" x="95" y="208">clip_*.npz</text>
+  <text class="small" x="95" y="236">Loaded by ClipWindowDataset</text>
+  <text class="mono" x="95" y="268">time: [F]</text>
+  <text class="mono" x="95" y="292">rgb: [F, H, W, 3]</text>
+  <text class="mono" x="95" y="316">qpos: [F, 13]</text>
+  <text class="mono" x="95" y="340">qvel: [F, 12]</text>
+  <text class="mono" x="95" y="364">position_auto_mode: [F]</text>
+  <text class="mono" x="95" y="388">task_waypoints: [M_raw, 7]</text>
+  <text class="tiny" x="95" y="412">Other fields are preserved for analysis/debugging.</text>
+
+  <rect class="box note" x="70" y="465" width="340" height="170"/>
+  <text class="label" x="95" y="498">Clip Discovery</text>
+  <text class="small" x="95" y="526">Search recursively under data_dir</text>
+  <text class="mono" x="95" y="552">data_dir = "data/demos"</text>
+  <text class="mono" x="95" y="576">clip_pattern = "clip_*.npz"</text>
+  <text class="tiny" x="95" y="606">Clips shorter than required history + future</text>
+  <text class="tiny" x="95" y="625">time span are skipped.</text>
+
+  <!-- Sampling center -->
+  <text class="section" x="500" y="150">Random Anchor and Time Windows</text>
+  <rect class="box sample" x="500" y="175" width="790" height="460"/>
+  <text class="label" x="530" y="210">For each dataset item</text>
+  <text class="small" x="530" y="238">1. Randomly choose a usable clip</text>
+  <text class="small" x="530" y="262">2. Randomly sample anchor_time inside valid bounds</text>
+  <text class="small" x="530" y="286">3. Search nearest frame indices from clip["time"]</text>
+
+  <!-- Time axis -->
+  <path class="axis" d="M570 430 L1210 430"/>
+  <path class="axis" d="M570 430 L582 422"/>
+  <path class="axis" d="M570 430 L582 438"/>
+  <path class="axis" d="M1210 430 L1198 422"/>
+  <path class="axis" d="M1210 430 L1198 438"/>
+  <text class="tiny" x="560" y="462">past</text>
+  <text class="tiny" x="1192" y="462">future</text>
+
+  <!-- Anchor and sampled points -->
+  <path class="anchor" d="M890 350 L890 505"/>
+  <circle class="dot-anchor" cx="890" cy="430" r="8"/>
+  <text class="label" x="842" y="338">anchor_time</text>
+  <text class="mono" x="842" y="528">t0</text>
+
+  <circle class="dot-history" cx="610" cy="430" r="7"/>
+  <circle class="dot-history" cx="650" cy="430" r="7"/>
+  <circle class="dot-history" cx="690" cy="430" r="7"/>
+  <circle class="dot-history" cx="730" cy="430" r="7"/>
+  <circle class="dot-history" cx="770" cy="430" r="7"/>
+  <circle class="dot-history" cx="810" cy="430" r="7"/>
+  <circle class="dot-history" cx="850" cy="430" r="7"/>
+  <text class="small" x="610" y="386">history samples</text>
+  <text class="mono" x="610" y="408">T = n_traj_encoder</text>
+  <path class="dash" d="M610 447 L850 447"/>
+  <text class="mono" x="660" y="475">history_dt</text>
+
+  <circle class="dot-future" cx="950" cy="430" r="7"/>
+  <circle class="dot-future" cx="1010" cy="430" r="7"/>
+  <circle class="dot-future" cx="1070" cy="430" r="7"/>
+  <circle class="dot-future" cx="1130" cy="430" r="7"/>
+  <circle class="dot-future" cx="1190" cy="430" r="7"/>
+  <text class="small" x="950" y="386">future supervision</text>
+  <text class="mono" x="950" y="408">N = pred_num_flight_waypoints</text>
+  <path class="dash" d="M950 447 L1190 447"/>
+  <text class="mono" x="1028" y="475">future_dt</text>
+
+  <rect class="box note" x="530" y="545" width="330" height="64"/>
+  <text class="mono" x="552" y="573">valid start = clip_start + (T-1)*history_dt</text>
+  <text class="mono" x="552" y="596">valid end = clip_end - N*future_dt</text>
+
+  <rect class="box note" x="900" y="545" width="350" height="64"/>
+  <text class="mono" x="922" y="573">history: t0-(T-1)dt ... t0</text>
+  <text class="mono" x="922" y="596">future: t0+dt ... t0+N*dt</text>
+
+  <!-- Derived input tensors -->
+  <text class="section" x="70" y="705">Model Inputs</text>
+  <rect class="box history" x="70" y="730" width="380" height="230"/>
+  <text class="label" x="95" y="763">Input batch tensors</text>
+  <text class="mono" x="95" y="795">rgb: [B, 3, image_size, image_size]</text>
+  <text class="tiny" x="95" y="815">anchor frame image, normalized by mean/std</text>
+  <text class="mono" x="95" y="846">traj_mode_ids: [B, T]</text>
+  <text class="tiny" x="95" y="866">sampled from position_auto_mode or mode_id</text>
+  <text class="mono" x="95" y="897">traj_continuous: [B, T, 16]</text>
+  <text class="tiny" x="95" y="917">pos, vel, accel, quat, omega</text>
+  <text class="mono" x="95" y="948">task_waypoints / mask: [B, M, 7] / [B, M]</text>
+
+  <!-- Derived target tensors -->
+  <text class="section" x="540" y="705">Supervision Targets</text>
+  <rect class="box future" x="540" y="730" width="470" height="230"/>
+  <text class="label" x="565" y="763">Teacher signals from future window</text>
+  <text class="mono" x="565" y="795">target_mode_id: [B]</text>
+  <text class="tiny" x="565" y="815">mode at anchor frame</text>
+  <text class="mono" x="565" y="846">teacher_flight_waypoints: [B, N, 4]</text>
+  <text class="tiny" x="565" y="866">[dx, dy, dz, dyaw] if relative_targets=True</text>
+  <text class="mono" x="565" y="897">teacher_flight_velocity_deltas: [B, N, 4]</text>
+  <text class="tiny" x="565" y="917">[dvx, dvy, dvz, ddyaw_rate]</text>
+  <text class="mono" x="565" y="948">teacher_flight_acceleration_deltas: [B, N, 3]</text>
+
+  <!-- Batch output -->
+  <text class="section" x="1100" y="705">PyTorch DataLoader Output</text>
+  <rect class="box batch" x="1100" y="730" width="430" height="230"/>
+  <text class="label" x="1125" y="763">collate_clip_samples</text>
+  <text class="small" x="1125" y="792">Stack per-sample tensors along batch dimension</text>
+  <text class="mono" x="1125" y="824">batch = next(iter(loader))</text>
+  <text class="mono" x="1125" y="856">planner.forward(</text>
+  <text class="mono" x="1145" y="880">rgb=batch["rgb"],</text>
+  <text class="mono" x="1145" y="904">traj_mode_ids=batch["traj_mode_ids"],</text>
+  <text class="mono" x="1145" y="928">traj_continuous=batch["traj_continuous"], ...)</text>
+
+  <!-- Config panel -->
+  <rect class="box note" x="1370" y="175" width="360" height="460"/>
+  <text class="section" x="1400" y="215">Key Config Parameters</text>
+  <text class="mono" x="1400" y="252">cfg.model.n_traj_encoder</text>
+  <text class="small" x="1400" y="274">T, number of history tokens</text>
+  <text class="mono" x="1400" y="312">cfg.data.history_dt</text>
+  <text class="small" x="1400" y="334">time gap between history samples</text>
+  <text class="mono" x="1400" y="372">cfg.model.pred_num_flight_waypoints</text>
+  <text class="small" x="1400" y="394">N, number of future supervised points</text>
+  <text class="mono" x="1400" y="432">cfg.data.future_dt</text>
+  <text class="small" x="1400" y="454">time gap between future target points</text>
+  <text class="mono" x="1400" y="492">cfg.model.n_waypoints</text>
+  <text class="small" x="1400" y="514">M, padded task waypoint count</text>
+  <text class="mono" x="1400" y="552">cfg.data.relative_targets</text>
+  <text class="small" x="1400" y="574">whether future waypoints are relative to t0</text>
+  <text class="mono" x="1400" y="612">cfg.data.samples_per_epoch</text>
+
+  <!-- Arrows -->
+  <path class="arrow" d="M410 300 C455 300 455 290 500 290"/>
+  <path class="arrow" d="M760 635 C760 685 310 685 310 730"/>
+  <path class="arrow" d="M895 635 C895 685 775 685 775 730"/>
+  <path class="arrow" d="M1010 635 C1010 685 1220 685 1220 730"/>
+  <path class="arrow-soft" d="M1370 360 C1330 360 1310 430 1290 430"/>
+  <path class="arrow-soft" d="M1370 460 C1325 460 1312 475 1250 475"/>
+  <path class="arrow" d="M450 845 C500 845 500 845 540 845"/>
+  <path class="arrow" d="M1010 845 C1050 845 1060 845 1100 845"/>
+
+  <!-- Footer -->
+  <text class="tiny" x="70" y="1035">File: docs/clip_data_sampling.svg</text>
+</svg>

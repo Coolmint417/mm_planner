@@ -1,0 +1,240 @@
+<mujoco>
+    <default>
+        <joint type="hinge" frictionloss="0" damping="0" />
+        <!-- position ctrllimited="true" ctrlrange="-180 180" forcelimited="true" forcerange="-50 50" kp="100" /-->
+    </default>
+
+    
+    <option gravity="0 0 -9.8">
+        <flag multiccd="enable"/>
+    </option>
+    <compiler 
+        meshdir="assets/" 
+        balanceinertia="true" 
+        discardvisual="false" 
+        eulerseq="XYZ"/>
+
+    <asset>
+        <texture name="texplane" type="2d" builtin="checker" rgb1=".2 .3 .4" rgb2=".1 0.15 0.2" width="512" height="512" mark="cross" markrgb=".8 .8 .8" />
+        <material name="matplane" reflectance="0.3" texture="texplane" texrepeat="1 1" texuniform="true" />
+
+        <mesh file="assem_body.STL" scale="0.001 0.001 0.001"/>
+        <mesh file="jetson.STL" scale="0.001 0.001 0.001"/>
+
+        <mesh file="motor_2207Plus.STL" scale="0.001 0.001 0.001"/>
+        <mesh file="propeller.STL" scale="0.001 0.001 0.001"/> 
+
+        <mesh file="upper_link.STL" scale="0.001 0.001 0.001"/> 
+        <mesh file="bottom_link.STL" scale="0.001 0.001 0.001"/> 
+        <mesh file="left_link.STL" scale="0.001 0.001 0.001"/> 
+        <mesh file="right_link.STL" scale="0.001 0.001 0.001"/>
+
+        <mesh file="sucker_high.STL" scale="0.001 0.001 0.001"/>
+        <mesh file="sucker_low.STL" scale="0.001 0.001 0.001"/>
+        <mesh file="sucker_assem.STL" scale="0.001 0.001 0.001"/>
+
+        <mesh file="aux_joint.STL" scale="0.001 0.001 0.001"/>
+
+        <mesh file="wall_75deg.STL" scale="0.001 0.001 0.001"/>
+        <mesh file="wall_60deg.STL" scale="0.001 0.001 0.001"/>
+        <mesh file="wall_45deg.STL" scale="0.001 0.001 0.001"/>
+
+    </asset>
+
+    <worldbody>
+        <!-- 灯光 -->
+        <light directional="true" pos="-0.5 0.5 3" dir="0 0 -1" />
+        
+        <geom name="floor" size="0 0 0.05" type="plane" material="groundplane" friction="1 1 1"/>
+        
+        <!--geom name="Box" pos="3 0 1.5" type="mesh" mesh="wall_45deg" material="groundplane" friction="1 1 1"/-->
+        <body name="Body" pos="-2 2 0.04">
+            <geom name="Body" type="mesh" mesh="assem_body" pos="0 0 0" rgba="0.1 0.1 0.1 1"/>
+            <inertial pos="0 0 0.0267" euler="0 0 0" mass="1.324" diaginertia="3.35e-3 2.28e-3 4.81e-3"/>
+            <joint type="free" stiffness="0" damping="0" frictionloss="0" armature="0"/>
+
+            <body name="motor_upleft" pos="0.12 0.11 0.055">
+                <geom name="motor_upleft" type="mesh" mesh="motor_2207Plus" pos="0 0 0" rgba="0.1 0.7 0.7 1"/>
+                <inertial pos="0 0 0.01" euler="0 0 0" mass="0.0314" diaginertia="2.7e-6 2.7e-6 3e-6"/>
+
+                <body name="propeller_upleft" pos="0 0 0.023">
+                    <geom name="propeller_upleft" type="mesh" mesh="propeller" pos="0 0 0" rgba="0.7 0.1 0.1 1"/>
+                    <inertial pos="0 0 0.001" euler="0 0 0" mass="0.007" diaginertia="4.7e-6 4.7e-6 9.4e-6"/>
+                    <site name="motor1_site" pos="0 0 0"/>
+                </body>
+            </body>
+
+            <body name="motor_upright" pos="0.12 -0.11 0.055">
+                <geom name="motor_upright" type="mesh" mesh="motor_2207Plus" pos="0 0 0" rgba="0.1 0.7 0.7 1"/>
+                <inertial pos="0 0 0.01" euler="0 0 0" mass="0.0314" diaginertia="2.7e-6 2.7e-6 3e-6"/>
+
+                <body name="propeller_upright" pos="0 0 0.023">
+                    <geom name="propeller_upright" type="mesh" mesh="propeller" pos="0 0 0" rgba="0.7 0.1 0.1 1"/>
+                    <inertial pos="0 0 0.001" euler="0 0 0" mass="0.007" diaginertia="4.7e-6 4.7e-6 9.4e-6"/>
+                    <site name="motor4_site" pos="0 0 0"/>
+                </body>
+            </body>
+
+            <body name="motor_bottomleft" pos="-0.1 0.11 0.055">
+               <geom name="motor_bottomleft" type="mesh" mesh="motor_2207Plus" pos="0 0 0" rgba="0.1 0.7 0.7 1"/>
+                <inertial pos="0 0 0.01" euler="0 0 0" mass="0.0314" diaginertia="2.7e-6 2.7e-6 3e-6"/>
+
+                <body name="propeller_bottomleft" pos="0 0 0.023">
+                    <geom name="propeller_bottomleft" type="mesh" mesh="propeller" pos="0 0 0" rgba="0.7 0.1 0.1 1"/>
+                    <inertial pos="0 0 0.001" euler="0 0 0" mass="0.007" diaginertia="4.7e-6 4.7e-6 9.4e-6"/>
+                    <site name="motor2_site" pos="0 0 0"/>
+                </body>
+            </body>
+
+            <body name="motor_bottomright" pos="-0.1 -0.11 0.055">
+                <geom name="motor_bottomright" type="mesh" mesh="motor_2207Plus" pos="0 0 0" rgba="0.1 0.7 0.7 1"/>
+                <inertial pos="0 0 0.01" euler="0 0 0" mass="0.0314" diaginertia="2.7e-6 2.7e-6 3e-6"/>
+
+                <body name="propeller_bottomright" pos="0 0 0.023">
+                    <geom name="propeller_bottomright" type="mesh" mesh="propeller" pos="0 0 0" rgba="0.7 0.1 0.1 1"/>
+                    <inertial pos="0 0 0.001" euler="0 0 0" mass="0.007" diaginertia="4.7e-6 4.7e-6 9.4e-6"/>
+                    <site name="motor3_site" pos="0 0 0"/>
+                </body>
+            </body>
+
+            <body name="jetson" pos="-0.0625 -0.0405 0.003">
+                <geom name="jetson" type="mesh" mesh="jetson" pos="0 0 0" rgba="0.4 0.4 0.4 1"/>
+                <inertial pos="0 -0.0405 0.019" euler="0 0 0" mass="0.345" diaginertia="2.97e-4 1.57e-4 3.61e-4"/>
+            </body>
+
+            <body name="upper_link" pos="0.080 0 -0.001">
+                <geom name="upper_link" type="mesh" mesh="upper_link" pos="0 0 0" rgba="0.1 0.1 0.1 1"/>
+                <inertial pos="0 0 -0.001" euler="0 0 0" mass="0.01" diaginertia="3.42e-5 2.44e-7 3.45e-5"/>
+                <joint name="joint_upper_link" type="hinge" pos="0 0 0" axis="0 0 1"/>
+            </body>
+
+            <body name="bottom_link" pos="0 0 -0.001">
+                <geom name="bottom_link" type="mesh" mesh="bottom_link" pos="0 0 0" rgba="0.1 0.1 0.1 1"/>
+                <inertial pos="0 0 -0.001" euler="0 0 0" mass="0.01" diaginertia="3.42e-5 2.44e-7 3.45e-5"/>
+                <joint name="joint_bottom_link" type="hinge" pos="0 0 0" axis="0 0 1"/>
+
+                <body name="left_link" pos="0 0.1 -0.003">
+                    <geom name="left_link" type="mesh" mesh="left_link" pos="0 0 0" rgba="0.1 0.1 0.1 1"/>
+                    <inertial pos="-0.012 -0.0696 -0.0015" mass="0.031" fullinertia="1.57e-4 1.23e-4 2.8e-4 1.2e-4 0 0"/>
+                    <joint name="joint_left_link" type="hinge" pos="0 0 0" axis="0 0 1"/>
+
+                    <body name="sucker_upleft" pos="0.11 0 -0.003" euler="0 0 0"> 
+                        <!--geom name="sucker_upleft" type="mesh" mesh="sucker_high" pos="0 0 0" rgba="0.1 0.7 0.5 1" friction="1 1 1" margin="0.002" gap="0.001"/-->
+                        <geom name="sucker_upleft" type="mesh" mesh="sucker_assem" pos="0 0 -0.003" rgba="0.4 0.4 0.7 1" friction="1 1 1" margin="0.002" gap="0.001"/>
+                        <inertial pos="0 0 -0.0158" mass="0.07" diaginertia="1.37e-5 1.89e-5 1.37e-5"/>                        
+                        <site name="site_sucker_upleft" pos="0 0 0"/>
+                    </body>
+
+                    <body name="sucker_bottomright" pos="-0.09 -0.2 -0.003" euler="0 0 0">
+                        <geom name="sucker_bottomright" type="mesh" mesh="sucker_assem" pos="0 0 -0.003" rgba="0.4 0.4 0.7 1" friction="1 1 1" margin="0.002" gap="0.001"/>
+                        <inertial pos="0 0 -0.0158" mass="0.07" diaginertia="1.37e-5 1.89e-5 1.37e-5"/>
+                        <!--joint name="slider_bottomright" type="slide" pos="0 0 0" axis="0 1 0" range="-0.01 0"/-->
+                        <site name="site_sucker_bottomright" pos="0 0 0"/>
+                    </body>
+
+                    <body name="aux_link_left" pos="0.08 0 0" euler="0 0 0">
+                        <geom name="aux_link_left" type="mesh" mesh="aux_joint" pos="0 0 0" rgba="0.4 0.4 0.4 1"/>
+                        <inertial pos="0 0 -0.0015" mass="0.01" diaginertia="1e-8 1e-8 1e-8"/>
+                        <joint name="aux_joint_left" type="hinge" pos="0 0 0" axis="0 0 1"/>
+                    </body>
+                </body>
+
+                <body name="right_link" pos="0 -0.1 -0.006">
+                    <geom name="right_link" type="mesh" mesh="right_link" pos="0 0 0" rgba="0.1 0.1 0.1 1"/>
+                    <inertial pos="-0.012 0.0696 -0.0015" mass="0.031" fullinertia="1.57e-4 1.23e-4 2.8e-4 -1.2e-4 0 0"/>
+                    <joint name="joint_right_link" type="hinge" pos="0 0 0" axis="0 0 1"/>
+
+                    <body name="sucker_upright" pos="0.11 0 0" euler="0 0 0">
+                        <geom name="sucker_upright" type="mesh" mesh="sucker_assem" pos="0 0 0" rgba="0.4 0.5 0.7 1" friction="1 1 1" margin="0.002" gap="0.001"/>
+                        <inertial pos="0 0 -0.0158" mass="0.07" diaginertia="1.37e-5 1.89e-5 1.37e-5"/>
+                        <!--joint name="slider_upright" type="slide" pos="0 0 0" axis="0 1 0" range="-0.01 0"/-->
+                        <site name="site_sucker_upright" pos="0 0 0"/>
+                    </body>
+
+                    <body name="sucker_bottomleft" pos="-0.09 0.2 0" euler="0 0 0">
+                        <geom name="sucker_bottomleft" type="mesh" mesh="sucker_assem" pos="0 0 0" rgba="0.4 0.4 0.7 1" friction="1 1 1" margin="0.002" gap="0.001"/>
+                        <inertial pos="0 0 -0.0158" mass="0.07" diaginertia="1.37e-5 1.89e-5 1.37e-5"/>
+                        <!--joint name="slider_bottomleft" type="slide" pos="0 0 0" axis="0 1 0" range="-0.01 0"/-->
+                        <site name="site_sucker_bottomleft" pos="0 0 0"/>
+                    </body>
+
+                    <body name="aux_link_right" pos="0.08 0 0" euler="0 0 0">
+                        <geom name="aux_link_right" type="mesh" mesh="aux_joint" pos="0 0 0" rgba="0.4 0.4 0.4 1"/>
+                        <inertial pos="0 0 -0.0015" mass="0.01" diaginertia="1e-8 1e-8 1e-8"/>
+                        <joint name="aux_joint_right" type="hinge" pos="0 0 0" axis="0 0 1"/>
+                    </body>
+                </body>
+            </body>
+
+            <site name="imu" pos="0.045 0 0.06"/>
+            <camera
+                name="fpv_camera"
+                pos="0.3 0 0.0"
+                xyaxes="0 -1 0 0 0 1"
+                fovy="90"
+            />
+            <camera
+                name="fpv_camera_far"
+                pos="-0.6 0 0.48"
+                xyaxes="0 -1 0 0 0 1"
+                fovy="90"
+            />
+        </body>
+        
+    </worldbody>
+
+    <contact>
+
+        <exclude name="exclude1" body1="Body" body2="upper_link"/>
+        <exclude name="exclude2" body1="Body" body2="bottom_link"/>
+
+        <exclude name="exclude3" body1="sucker_upleft" body2="left_link"/>
+        <exclude name="exclude4" body1="sucker_bottomright" body2="left_link"/>
+        <exclude name="exclude5" body1="sucker_upright" body2="left_link"/>
+        <exclude name="exclude6" body1="sucker_bottomleft" body2="left_link"/>
+
+        <!--pair geom1="sucker_upleft" geom2="Box" solref="-100 -200" solimp="0.9 0.95 0.001 0.5 4" condim="4"/>
+        <pair geom1="sucker_bottomright" geom2="Box" solref="-100 -200" solimp="0.9 0.95 0.001 0.5 4" condim="4"/>
+        <pair geom1="sucker_upright" geom2="Box" solref="-100 -200" solimp="0.9 0.95 0.001 0.5 4" condim="4"/>
+        <pair geom1="sucker_bottomleft" geom2="Box" solref="-100 -200" solimp="0.9 0.95 0.001 0.5 4" condim="4"/>
+
+        <pair geom1="sucker_upleft" geom2="floor" solref="-10000 -400" solimp="0.9 0.95 0.001 0.5 4" condim="4"/>
+        <pair geom1="sucker_bottomright" geom2="floor" solref="-10000 -400" solimp="0.9 0.95 0.001 0.5 4" condim="4"/>
+        <pair geom1="sucker_upright" geom2="floor" solref="-10000 -400" solimp="0.9 0.95 0.001 0.5 4" condim="4"/>
+        <pair geom1="sucker_bottomleft" geom2="floor" solref="-10000 -400" solimp="0.9 0.95 0.001 0.5 4" condim="4"/-->
+    </contact>
+
+    <equality>
+        <weld name="equal1" body1="upper_link" body2="aux_link_left" relpose="0 0.1 -0.001 1 0 0 0"/>
+        <weld name="equal2" body1="upper_link" body2="aux_link_right" relpose="0 -0.1 -0.004 1 0 0 0"/>
+    </equality>
+
+    <actuator>
+        <position name="servo" joint="joint_upper_link" ctrlrange="-0.314 0.314" gear="1" kp="100" kv="3"/>
+
+        <adhesion name="adhesionUpLeft" body="sucker_upleft" ctrlrange="0 1" gain="25"/>
+        <adhesion name="adhesionBottomLeft" body="sucker_bottomleft" ctrlrange="0 1" gain="25"/>
+        <adhesion name="adhesionBottomRight" body="sucker_bottomright" ctrlrange="0 1" gain="25"/>
+        <adhesion name="adhesionUpRight" body="sucker_upright" ctrlrange="0 1" gain="25"/>
+
+        <!--motor name="adhesion_upleft" ctrlrange="-1 0.5" gear="0 40 0 0 0 0" site="site_sucker_upleft"/>
+        <motor name="adhesion_bottomleft" ctrlrange="-1 0.5" gear="0 40 0 0 0 0" site="site_sucker_bottomleft"/>
+        <motor name="adhesion_bottomright" ctrlrange="-1 0.5" gear="0 40 0 0 0 0" site="site_sucker_bottomright"/>
+        <motor name="adhesion_upright" ctrlrange="-1 0.5" gear="0 40 0 0 0 0" site="site_sucker_upright"/-->
+
+        <motor name="motor_upleft" ctrlrange="0 1000" gear="0 0 2.052e-2 0 0 -3.842e-04" site="motor1_site"/>
+        <motor name="motor_bottomleft" ctrlrange="0 1000" gear="0 0 2.052e-2 0 0 3.842e-04" site="motor2_site"/>
+        <motor name="motor_bottomright" ctrlrange="0 1000" gear="0 0 2.052e-2 0 0 -3.842e-04" site="motor3_site"/>
+        <motor name="motor_upright" ctrlrange="0 1000" gear="0 0 2.052e-2 0 0 3.842e-04" site="motor4_site"/>
+
+
+        <!-- 电机的控制输入量是转速（krpm）的平方，gear中的参数是电机的推力常数与电机的反扭常数 -->
+        <!-- 该组参数对应的是F80 KV2200电机与T6143桨叶 -->
+    </actuator>
+
+    <sensor>
+        <gyro name="body_gyro" site="imu"/>
+        <accelerometer name="body_linacc" site="imu"/>
+        <framequat name="body_quat" objtype="site" objname="imu"/>
+    </sensor>
+</mujoco>

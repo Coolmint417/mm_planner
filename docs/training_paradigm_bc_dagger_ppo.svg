@@ -1,0 +1,167 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1900" height="1180" viewBox="0 0 1900 1180">
+  <defs>
+    <style>
+      .bg { fill: #f7f8fb; }
+      .title { font: 700 34px Inter, Arial, sans-serif; fill: #172033; }
+      .subtitle { font: 500 16px Inter, Arial, sans-serif; fill: #5b6578; }
+      .section { font: 700 19px Inter, Arial, sans-serif; fill: #172033; }
+      .label { font: 700 16px Inter, Arial, sans-serif; fill: #172033; }
+      .small { font: 500 13px Inter, Arial, sans-serif; fill: #364154; }
+      .tiny { font: 500 12px Inter, Arial, sans-serif; fill: #5b6578; }
+      .mono { font: 600 12px "JetBrains Mono", Consolas, monospace; fill: #334155; }
+      .box { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.5; rx: 8; }
+      .input { fill: #eaf6ff; stroke: #7cc4f8; }
+      .model { fill: #eefbf3; stroke: #76d39a; }
+      .bc { fill: #fff4df; stroke: #f4b84f; }
+      .dagger { fill: #f4efff; stroke: #a78bfa; }
+      .ppo { fill: #fff0f0; stroke: #f87171; }
+      .sim { fill: #ecfeff; stroke: #22b8cf; }
+      .note { fill: #ffffff; stroke: #d7dde8; }
+      .head { fill: #ffffff; stroke: #c4b5fd; stroke-width: 1.4; rx: 7; }
+      .arrow { stroke: #475569; stroke-width: 2.2; fill: none; marker-end: url(#arrow); }
+      .arrow-soft { stroke: #94a3b8; stroke-width: 1.8; fill: none; marker-end: url(#arrowSoft); stroke-dasharray: 6 5; }
+      .arrow-loop { stroke: #7c3aed; stroke-width: 2.2; fill: none; marker-end: url(#arrowPurple); stroke-dasharray: 8 5; }
+      .arrow-rl { stroke: #dc2626; stroke-width: 2.2; fill: none; marker-end: url(#arrowRed); }
+    </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#475569"/>
+    </marker>
+    <marker id="arrowSoft" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/>
+    </marker>
+    <marker id="arrowPurple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#7c3aed"/>
+    </marker>
+    <marker id="arrowRed" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#dc2626"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1900" height="1180"/>
+  <text class="title" x="70" y="64">Training Paradigm: BC Pretraining, DAgger Correction, Residual PPO Fine-Tuning</text>
+  <text class="subtitle" x="70" y="94">Route-conditioned multimodal planner training pipeline. Current action heads exclude TransitionHead.</text>
+
+  <!-- Inputs and policy definition -->
+  <text class="section" x="70" y="150">Observation and Policy</text>
+  <rect class="box input" x="70" y="175" width="335" height="210"/>
+  <text class="label" x="95" y="208">Observation o_t</text>
+  <text class="mono" x="95" y="240">rgb_t</text>
+  <text class="tiny" x="170" y="240">onboard RGB image</text>
+  <text class="mono" x="95" y="270">traj_mode_ids_t</text>
+  <text class="tiny" x="235" y="270">past modes</text>
+  <text class="mono" x="95" y="300">traj_continuous_t</text>
+  <text class="tiny" x="245" y="300">pos, vel, acc, quat, omega</text>
+  <text class="mono" x="95" y="330">task_waypoints_t</text>
+  <text class="tiny" x="240" y="330">route-conditioned goal window</text>
+  <text class="tiny" x="95" y="362">Samples come from clip-to-batch dataloader.</text>
+
+  <rect class="box model" x="475" y="175" width="455" height="210"/>
+  <text class="label" x="505" y="208">MultimodalPlanner pi_theta(a_t | o_t)</text>
+  <text class="small" x="505" y="238">DINOv2 + trajectory encoder + waypoint encoder</text>
+  <text class="small" x="505" y="262">Fusion transformer produces shared feature h</text>
+  <text class="mono" x="505" y="296">h: [B, fusion_dim]</text>
+  <text class="tiny" x="505" y="326">DINOv2 backbone is frozen at the beginning.</text>
+  <text class="tiny" x="505" y="352">Projection, fusion, encoders, and heads are trainable.</text>
+
+  <rect class="box model" x="1000" y="175" width="505" height="210"/>
+  <text class="label" x="1030" y="208">Current Action Outputs</text>
+  <rect class="head" x="1030" y="230" width="200" height="42"/>
+  <text class="mono" x="1048" y="257">Mode logits [B,K]</text>
+  <rect class="head" x="1260" y="230" width="210" height="42"/>
+  <text class="mono" x="1278" y="257">Waypoint mu/sigma</text>
+  <rect class="head" x="1030" y="288" width="200" height="42"/>
+  <text class="mono" x="1048" y="315">Velocity delta</text>
+  <rect class="head" x="1260" y="288" width="210" height="42"/>
+  <text class="mono" x="1278" y="315">Acceleration delta</text>
+  <rect class="head" x="1030" y="346" width="200" height="42"/>
+  <text class="mono" x="1048" y="373">Crawl action</text>
+  <text class="tiny" x="1260" y="372">No TransitionHead in current setup.</text>
+
+  <!-- Main schedule -->
+  <text class="section" x="70" y="455">Recommended Training Schedule</text>
+
+  <rect class="box bc" x="70" y="485" width="385" height="230"/>
+  <text class="label" x="100" y="520">Stage 0: Visual Initialization</text>
+  <text class="mono" x="100" y="552">DINOv2 ViT-B/14</text>
+  <text class="small" x="100" y="580">Freeze visual backbone for stability</text>
+  <text class="small" x="100" y="604">Train projection and planner modules</text>
+  <text class="mono" x="100" y="638">z_img = f_DINO(rgb)</text>
+  <text class="tiny" x="100" y="674">Reduces memory use and synthetic overfitting early.</text>
+
+  <rect class="box bc" x="515" y="485" width="385" height="230"/>
+  <text class="label" x="545" y="520">Stage 1: Behavior Cloning</text>
+  <text class="small" x="545" y="552">Supervised imitation from expert clips</text>
+  <text class="mono" x="545" y="584">D_E = {(o_t, a_t^E)}</text>
+  <text class="small" x="545" y="616">Sources: rule expert, planner data,</text>
+  <text class="small" x="545" y="638">human teleoperation, recovery cases</text>
+  <text class="mono" x="545" y="674">min_theta L_BC(pi_theta(o), a^E)</text>
+
+  <rect class="box dagger" x="960" y="485" width="385" height="230"/>
+  <text class="label" x="990" y="520">Stage 2: DAgger</text>
+  <text class="small" x="990" y="552">Collect states visited by current policy</text>
+  <text class="mono" x="990" y="584">s ~ d_pi_theta</text>
+  <text class="small" x="990" y="616">Query expert labels for those states</text>
+  <text class="mono" x="990" y="648">D_k = D_{k-1} union {(o, pi_E(o))}</text>
+  <text class="tiny" x="990" y="684">Same BC loss, better closed-loop distribution.</text>
+
+  <rect class="box ppo" x="1405" y="485" width="385" height="230"/>
+  <text class="label" x="1435" y="520">Stage 3: Residual PPO</text>
+  <text class="small" x="1435" y="552">Fine-tune continuous residual actions</text>
+  <text class="mono" x="1435" y="584">a = a_BC/DAgger + delta_a</text>
+  <text class="small" x="1435" y="616">Early PPO keeps discrete mode fixed</text>
+  <text class="mono" x="1435" y="648">optimize reward + value + entropy</text>
+  <text class="tiny" x="1435" y="684">Improves success, robustness, energy, safety.</text>
+
+  <path class="arrow" d="M455 600 C480 600 490 600 515 600"/>
+  <path class="arrow" d="M900 600 C925 600 935 600 960 600"/>
+  <path class="arrow" d="M1345 600 C1370 600 1380 600 1405 600"/>
+
+  <!-- Losses -->
+  <text class="section" x="70" y="780">BC / DAgger Supervised Losses</text>
+  <rect class="box note" x="70" y="810" width="790" height="235"/>
+  <text class="label" x="100" y="845">Losses applied to current heads</text>
+  <text class="mono" x="100" y="880">L = lambda_mode L_mode + lambda_wp L_wp</text>
+  <text class="mono" x="100" y="906">  + lambda_vel L_velocity_delta + lambda_acc L_acceleration_delta</text>
+  <text class="mono" x="100" y="932">  + lambda_crawl L_crawl + lambda_smooth L_smooth + lambda_goal L_goal</text>
+  <text class="small" x="100" y="970">Mode: weighted cross entropy for imbalanced modes</text>
+  <text class="small" x="100" y="994">Waypoint / velocity / acceleration heads: Gaussian NLL on mu, sigma</text>
+  <text class="small" x="100" y="1018">Crawl action: SmoothL1 or Gaussian NLL if made probabilistic</text>
+  <text class="tiny" x="100" y="1038">Transition loss from the MD document is intentionally omitted here.</text>
+
+  <rect class="box note" x="910" y="810" width="425" height="235"/>
+  <text class="label" x="940" y="845">DAgger Closed-Loop Correction</text>
+  <text class="mono" x="940" y="880">rollout pi_theta in simulator</text>
+  <text class="mono" x="940" y="906">collect model-visited observations</text>
+  <text class="mono" x="940" y="932">query pi_E(o_t) labels</text>
+  <text class="mono" x="940" y="958">aggregate dataset</text>
+  <text class="mono" x="940" y="984">continue BC training</text>
+  <text class="tiny" x="940" y="1022">Mixed execution beta*pi_E + (1-beta)*pi_theta early on.</text>
+
+  <rect class="box note" x="1385" y="810" width="405" height="235"/>
+  <text class="label" x="1415" y="845">Residual PPO Objective</text>
+  <text class="mono" x="1415" y="880">pi_res(delta_a | o_t)</text>
+  <text class="mono" x="1415" y="906">V_psi(o_t)</text>
+  <text class="mono" x="1415" y="932">PPO clipped surrogate</text>
+  <text class="small" x="1415" y="966">Rewards: progress, reaching, finish,</text>
+  <text class="small" x="1415" y="990">safety, energy, smoothness, valid modes</text>
+  <text class="tiny" x="1415" y="1022">Start with continuous residuals only for stability.</text>
+
+  <!-- Bottom closed loop -->
+  <text class="section" x="70" y="1090">Practical Order</text>
+  <text class="mono" x="220" y="1090">Frozen DINOv2 -> BC pretraining -> Selective DAgger -> Residual PPO -> Sim2Real adaptation</text>
+
+  <rect class="box sim" x="1520" y="175" width="270" height="210"/>
+  <text class="label" x="1545" y="208">Sim2Real Adaptation</text>
+  <text class="small" x="1545" y="240">Domain randomization</text>
+  <text class="small" x="1545" y="266">Texture / lighting variation</text>
+  <text class="small" x="1545" y="292">Dynamics randomization</text>
+  <text class="small" x="1545" y="318">Safety validation</text>
+  <text class="tiny" x="1545" y="354">Final deployment preparation.</text>
+
+  <path class="arrow-soft" d="M1505 280 C1515 280 1515 280 1520 280"/>
+  <path class="arrow-loop" d="M1152 715 C1152 755 1122 770 1122 810"/>
+  <path class="arrow-rl" d="M1597 715 C1597 755 1588 770 1588 810"/>
+  <path class="arrow-soft" d="M1597 485 C1597 420 1655 420 1655 385"/>
+
+  <text class="tiny" x="70" y="1140">File: docs/training_paradigm_bc_dagger_ppo.svg</text>
+</svg>

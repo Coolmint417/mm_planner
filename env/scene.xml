@@ -1,0 +1,51 @@
+<mujoco model="CF2 scene">
+  <include file="perching_uav.xml"/>
+  <include file="assets/map1.xml"/>
+
+  <statistic center="0 0 0.1" extent="0.2" meansize=".05"/>
+
+  <visual>
+    <headlight diffuse="0.6 0.6 0.6" ambient="0.3 0.3 0.3" specular="0 0 0"/>
+    <rgba haze="0.35 0.35 0.35 1"/>
+    <map znear="0.01" zfar="80" fogstart="30" fogend="80"/>
+    <global azimuth="-20" elevation="-20" ellipsoidinertia="true"/>
+  </visual>
+
+  <asset>
+    <!--texture type="skybox" builtin="gradient" rgb1="0.7 0.8 0.9" rgb2="0.8 0.9 1.0" width="512" height="3072"/-->
+    <texture type="skybox" builtin="gradient"
+         rgb1="0.02 0.03 0.05"
+         rgb2="0.02 0.03 0.05"
+         width="512"
+         height="3072"/>
+    <texture type="2d" name="floor_checker" builtin="checker" mark="edge" rgb1="0.20 0.20 0.20" rgb2="0.15 0.15 0.15"
+      markrgb="0.10 0.12 0.14" width="1000" height="1000"/>
+    <texture type="2d" name="wall_stripes" builtin="checker" mark="cross" rgb1="0.95 0.18 0.12" rgb2="1.00 0.78 0.08"
+      markrgb="0.02 0.02 0.02" width="512" height="512"/>
+
+    <texture name="floor_tex_concrete" type="2d" file="assets/textures/concrete_floor_enhanced.png"/>
+    <texture name="cube_tex_white_marble1" type="cube" file="assets/textures/white_marble1.png"/>
+    <texture name="cube_tex_brick1" type="cube" file="assets/textures/brick1.png"/>
+    <texture name="cube_tex_brick2" type="cube" file="assets/textures/brick2.png"/>
+
+    <material name="groundplane" texture="floor_tex_concrete" texuniform="true" texrepeat="4 4" reflectance="0.05"/>
+    <material name="obstacle_wall_marble1" texture="cube_tex_white_marble1" texuniform="false" reflectance="0.08"/>
+    <material name="obstacle_wall_brick1" texture="cube_tex_brick1" texuniform="false" reflectance="0.08"/>
+    <material name="obstacle_wall_brick2" texture="cube_tex_brick2" texuniform="false" reflectance="0.08"/>
+
+
+  </asset>
+
+  <worldbody>
+    <camera name="world_camera" pos="2.400 -2.700 1.450" xyaxes="0.959 0.284 -0.000 -0.078 0.262 0.962" fovy="28"/>
+    <!-- <camera name="world_camera" pos="-0.37 -0.78 0.49" xyaxes="0.78 -0.63 0 0.27 0.33 0.9"/> -->
+    <light pos="0 0 5" dir="0 0 -1" diffuse="0.55 0.55 0.52" specular="0.04 0.04 0.04" directional="true"/>
+    <!-- light pos="-1.2 -1.0 2.2" dir="0.6 0.4 -1" diffuse="0.45 0.45 0.40" specular="0.1 0.1 0.1" directional="true"/-->
+
+    <!-- Visual-only landmarks. They do not participate in collision. -->
+    <!-- geom name="landmark_blue_left" type="cylinder" pos="1.2 0.65 0.08" size="0.035 0.08" material="blue_landmark" contype="0" conaffinity="0"/>
+    <geom name="landmark_green_right" type="cylinder" pos="2.2 -0.65 0.08" size="0.035 0.08" material="green_landmark" contype="0" conaffinity="0"/>
+    <geom name="landmark_purple_center" type="sphere" pos="2.9 0.55 0.18" size="0.07" material="purple_landmark" contype="0" conaffinity="0"/-->
+    
+  </worldbody>
+</mujoco>

@@ -1,0 +1,20 @@
+<mujoco model="CF2 scene">
+  <worldbody>
+    <geom name="left_wall1" size="3 0.05 1.5" pos="0 -3 1.5" type="box" material="obstacle_wall_marble1" friction="1 1 1"/>
+    <geom name="right_wall1" size="3 0.05 1.5" pos="0 3 1.5" type="box" material="obstacle_wall_marble1" friction="1 1 1"/>
+    <geom name="front_wall1" size="0.05 3 1.5" pos="3 0 1.5" type="box" material="obstacle_wall_marble1" friction="1 1 1"/>
+    <geom name="back_wall1" size="0.05 3 1.5" pos="-3 0 1.5" type="box" material="obstacle_wall_marble1" friction="1 1 1"/>
+
+    <geom name="brick_wall_g1_1" size="0.4 0.4 0.4" pos="1.6 1.6 0.4" type="box" material="obstacle_wall_brick1" friction="1 1 1"/>
+    <geom name="brick_wall_g1_2" size="0.4 0.4 0.4" pos="1.6 1.6 1.2" type="box" material="obstacle_wall_brick1" friction="1 1 1"/>
+    <geom name="brick_wall_g1_3" size="0.4 0.4 0.4" pos="0.8 1.6 0.4" type="box" material="obstacle_wall_brick1" friction="1 1 1"/>
+    <geom name="brick_wall_g1_4" size="0.4 0.4 0.4" pos="0.8 1.6 1.2" type="box" material="obstacle_wall_brick1" friction="1 1 1"/>
+    <geom name="brick_wall_g1_5" size="0.4 0.4 0.4" pos="0.8 0.8 0.4" type="box" material="obstacle_wall_brick1" friction="1 1 1"/>
+    <geom name="brick_wall_g1_6" size="0.4 0.4 0.4" pos="0.8 0.8 1.2" type="box" material="obstacle_wall_brick1" friction="1 1 1"/>
+
+    <geom name="brick_wall_g2_1" size="0.4 0.4 0.4" pos="-1.6 -1.6 0.4" type="box" material="obstacle_wall_brick2" friction="1 1 1"/>
+    <geom name="brick_wall_g2_2" size="0.4 0.4 0.4" pos="-1.6 -1.6 1.2" type="box" material="obstacle_wall_brick2" friction="1 1 1"/>
+    <geom name="brick_wall_g2_3" size="0.4 0.4 0.4" pos="-0.8 -1.6 0.4" type="box" material="obstacle_wall_brick2" friction="1 1 1"/>
+    <geom name="brick_wall_g2_4" size="0.4 0.4 0.4" pos="-0.8 -1.6 1.2" type="box" material="obstacle_wall_brick2" friction="1 1 1"/>
+  </worldbody>
+</mujoco>
