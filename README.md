@@ -1,5 +1,24 @@
 # Route-Conditioned Multimodal Flying-Crawling Drone Planner
 
+## Environment Setup
+
+The project environment can be recreated from `requirements.yaml`:
+
+```bash
+conda env create -f requirements.yaml
+conda activate mm_planner
+```
+
+To verify the core packages:
+
+```bash
+python -c "import torch, mujoco, casadi, PySide6; print(torch.__version__)"
+```
+
+`requirements.yaml` is a compact, project-oriented environment file. It lists
+top-level dependencies only; low-level CUDA/runtime packages such as `nvidia-*`
+are installed automatically by the PyTorch CUDA wheels when needed.
+
 This package implements a modular PyTorch planner for a flying-crawling drone.
 It fuses onboard RGB observations, historical self-motion, and ordered task
 waypoints, then predicts motion mode, future flight waypoints, crawling action,

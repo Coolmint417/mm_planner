@@ -1,0 +1,28 @@
+name: mm_planner
+channels:
+  - conda-forge
+dependencies:
+  - python=3.13
+  - pip
+  - numpy
+  - scipy
+  - matplotlib
+  - pillow
+  - casadi
+  - pyside6
+  - pyqtgraph
+  - pyyaml
+  - tqdm
+  - pip:
+      # PyTorch CUDA wheels pull the required nvidia-* runtime packages
+      # automatically, so they are intentionally not listed here.
+      - torch==2.10.0+cu128
+      - torchvision==0.25.0+cu128
+      - torchaudio==2.10.0+cu128
+      - --extra-index-url https://download.pytorch.org/whl/cu128
+      - mujoco==3.9.0
+      - opencv-python==4.13.0.92
+      - pyopengl==3.1.10
+      - timm==1.0.27
+      - huggingface-hub==1.17.0
+      - safetensors==0.8.0rc1
