@@ -9,3 +9,6 @@ __pycache__/
 
 # collected clip data
 data/
+
+# 
+*.bak
