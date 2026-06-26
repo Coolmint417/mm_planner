@@ -49,12 +49,10 @@ def main() -> None:
         run_cfg.model.traj_continuous_dim,
         device=device,
     )
-    task_waypoints = torch.randn(
-        batch_size,
-        run_cfg.model.n_waypoints,
-        run_cfg.model.waypoint_dim,
-        device=device,
-    )
+    task_waypoints = [
+        torch.randn(3, run_cfg.model.waypoint_dim, device=device),
+        torch.randn(8, run_cfg.model.waypoint_dim, device=device),
+    ]
     teacher_flight_waypoints = torch.randn(
         batch_size,
         run_cfg.model.pred_num_flight_waypoints,
@@ -79,15 +77,12 @@ def main() -> None:
         traj_mode_ids=traj_mode_ids,
         traj_continuous=traj_continuous,
         task_waypoints=task_waypoints,
-        task_waypoint_mask=None,
         teacher_flight_waypoints=teacher_flight_waypoints,
         teacher_flight_velocity_deltas=teacher_flight_velocity_deltas,
         teacher_flight_acceleration_deltas=teacher_flight_acceleration_deltas,
         teacher_forcing_ratio=run_cfg.training.teacher_forcing_ratio,
     )
 
-    transition = outputs["transition"]
-    assert isinstance(transition, dict)
     flight_waypoints = outputs["flight_waypoints"]
     flight_velocity_deltas = outputs["flight_velocity_deltas"]
     flight_acceleration_deltas = outputs["flight_acceleration_deltas"]
@@ -114,16 +109,6 @@ def main() -> None:
         f"{tuple(flight_acceleration_deltas['sigma'].shape)}"
     )
     print(f"crawl_action shape: {tuple(outputs['crawl_action'].shape)}")
-    print(f"transition.contact_pos shape: {tuple(transition['contact_pos'].shape)}")
-    print(
-        "transition.surface_normal shape: "
-        f"{tuple(transition['surface_normal'].shape)}"
-    )
-    print(f"transition.yaw shape: {tuple(transition['yaw'].shape)}")
-    print(
-        "transition.approach_speed shape: "
-        f"{tuple(transition['approach_speed'].shape)}"
-    )
     print(f"fused_feature shape: {tuple(outputs['fused_feature'].shape)}")
     print(f"total parameters: {count_total_parameters(model):,}")
     print(f"trainable parameters: {count_trainable_parameters(model):,}")

@@ -4,7 +4,7 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 
-from mm_planner.config import ModelConfig
+from config import ModelConfig
 
 
 class ModePredictionHead(nn.Module):

@@ -11,7 +11,6 @@ from models.heads import (
     FlightAccelerationDeltaHead,
     FlightVelocityDeltaHead,
     ModePredictionHead,
-    TransitionHead,
 )
 from models.trajectory_encoder import HistoricalTrajectoryEncoder
 from models.vision_encoder import DINOv2VisionEncoder
@@ -31,15 +30,13 @@ class MultimodalPlanner(nn.Module):
         self.flight_velocity_delta_head = FlightVelocityDeltaHead(cfg)
         self.flight_acceleration_delta_head = FlightAccelerationDeltaHead(cfg)
         self.crawl_head = CrawlActionHead(cfg)
-        self.transition_head = TransitionHead(cfg)
 
     def forward(
         self,
         rgb: torch.Tensor,
         traj_mode_ids: torch.Tensor,
         traj_continuous: torch.Tensor,
-        task_waypoints: torch.Tensor,
-        task_waypoint_mask: torch.Tensor | None = None,
+        task_waypoints: list[torch.Tensor] | torch.Tensor,
         teacher_flight_waypoints: torch.Tensor | None = None,
         teacher_flight_velocity_deltas: torch.Tensor | None = None,
         teacher_flight_acceleration_deltas: torch.Tensor | None = None,
@@ -47,10 +44,10 @@ class MultimodalPlanner(nn.Module):
     ) -> dict[str, torch.Tensor | dict[str, torch.Tensor | dict[str, torch.Tensor]]]:
         # rgb: [B, 3, H, W]
         # traj_mode_ids: [B, T], traj_continuous: [B, T, traj_continuous_dim]
-        # task_waypoints: [B, M, waypoint_dim], task_waypoint_mask: [B, M] or None
+        # task_waypoints: list of [M_i, waypoint_dim] tensors.
         z_img = self.vision_encoder(rgb)
         z_traj = self.trajectory_encoder(traj_mode_ids, traj_continuous)
-        z_waypoint = self.waypoint_encoder(task_waypoints, task_waypoint_mask)
+        z_waypoint = self.waypoint_encoder(task_waypoints)
 
         # h: [B, fusion_dim]
         h = self.fusion(z_img, z_traj, z_waypoint)
@@ -74,6 +71,6 @@ class MultimodalPlanner(nn.Module):
                 teacher_forcing_ratio=teacher_forcing_ratio,
             ),
             "crawl_action": self.crawl_head(h),
-            "transition": self.transition_head(h),
+            #  "transition": self.transition_head(h),
             "fused_feature": h,
         }

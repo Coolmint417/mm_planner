@@ -18,7 +18,7 @@ class ModelConfig:
 
     # Historical trajectory encoder
     n_traj_encoder: int = 8
-    num_motion_modes: int = 7
+    num_motion_modes: int = 4  # flying/takeoff/landing/crawling/
     traj_continuous_dim: int = 16
     mode_embedding_dim: int = 16
     traj_token_dim: int = 256
@@ -28,8 +28,9 @@ class ModelConfig:
     traj_dropout: float = 0.1
 
     # Task waypoint encoder
-    n_waypoints: int = 5
-    waypoint_dim: int = 7
+    waypoint_dim: int = 7  
+    # task_point x, y, z, yaw
+    # (optional nx, ny, nz, if the point is on a plane)
     waypoint_token_dim: int = 256
     waypoint_encoder_layers: int = 2
     waypoint_encoder_heads: int = 4
@@ -45,7 +46,7 @@ class ModelConfig:
 
     # Prediction heads
     hidden_dim: int = 256
-    num_modes: int = 7
+    num_modes: int = 4 # flying/takeoff/landing/crawling/
 
     # Flight trajectory prediction
     pred_num_flight_waypoints: int = 5

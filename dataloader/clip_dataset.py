@@ -63,14 +63,14 @@ class ClipWindowDataset(Dataset):
             clip["time"],
             anchor_time,
             count=self.model_cfg.pred_num_flight_waypoints,
-            dt=self.cfg.model.pred_flight_waypoint_dt,
+            dt=self.model_cfg.pred_flight_waypoint_dt,
             start_step=1,
         )
 
         rgb = self._build_rgb(clip, anchor_index)
         traj_mode_ids = self._build_history_modes(clip, history_indices)
         traj_continuous = self._build_history_continuous(clip, history_indices)
-        task_waypoints, task_waypoint_mask = self._build_task_waypoints(clip, anchor_index)
+        task_waypoints = self._build_task_waypoints(clip, anchor_index)
 
         future_waypoints = self._build_future_waypoints(clip, future_indices, anchor_index)
         future_velocities = self._linear_velocity(clip, future_indices)
@@ -98,7 +98,6 @@ class ClipWindowDataset(Dataset):
             "traj_mode_ids": torch.from_numpy(traj_mode_ids).long(),
             "traj_continuous": torch.from_numpy(traj_continuous).float(),
             "task_waypoints": torch.from_numpy(task_waypoints).float(),
-            "task_waypoint_mask": torch.from_numpy(task_waypoint_mask).bool(),
             "target_mode_id": torch.tensor(target_mode_id, dtype=torch.long),
             "teacher_flight_waypoints": torch.from_numpy(future_waypoints).float(),
             "teacher_flight_velocity_deltas": torch.from_numpy(velocity_deltas).float(),
@@ -115,7 +114,10 @@ class ClipWindowDataset(Dataset):
     def _discover_clips(self) -> list[ClipInfo]:
         paths = sorted(self.data_dir.rglob(self.data_cfg.clip_pattern))
         clips: list[ClipInfo] = []
-        required_future = self.model_cfg.pred_num_flight_waypoints * self.cfg.model.pred_flight_waypoint_dt
+        required_future = (
+            self.model_cfg.pred_num_flight_waypoints
+            * self.model_cfg.pred_flight_waypoint_dt
+        )
         required_history = (self.model_cfg.n_traj_encoder - 1) * self.data_cfg.history_dt
 
         for path in paths:
@@ -167,7 +169,10 @@ class ClipWindowDataset(Dataset):
         rng: np.random.Generator,
     ) -> float:
         history = (self.model_cfg.n_traj_encoder - 1) * self.data_cfg.history_dt
-        future = self.model_cfg.pred_num_flight_waypoints * self.cfg.model.pred_flight_waypoint_dt
+        future = (
+            self.model_cfg.pred_num_flight_waypoints
+            * self.model_cfg.pred_flight_waypoint_dt
+        )
         low = clip_info.start_time + history
         high = clip_info.end_time - future
         return float(rng.uniform(low, high))
@@ -241,22 +246,21 @@ class ClipWindowDataset(Dataset):
         self,
         clip: dict[str, np.ndarray],
         anchor_index: int,
-    ) -> tuple[np.ndarray, np.ndarray]:
-        max_count = self.model_cfg.n_waypoints
-        waypoints = np.zeros((max_count, self.model_cfg.waypoint_dim), dtype=np.float32)
-        mask = np.ones((max_count,), dtype=bool)
-
+    ) -> np.ndarray:
         if self.data_cfg.task_waypoints_key in clip:
             raw = np.asarray(clip[self.data_cfg.task_waypoints_key], dtype=np.float32)
             raw = raw.reshape(-1, raw.shape[-1])
         else:
             raw = self._default_task_waypoint(clip, anchor_index)
 
-        count = min(max_count, raw.shape[0])
+        if raw.shape[0] == 0:
+            raw = self._default_task_waypoint(clip, anchor_index)
+
+        count = raw.shape[0]
         dims = min(self.model_cfg.waypoint_dim, raw.shape[1])
+        waypoints = np.zeros((count, self.model_cfg.waypoint_dim), dtype=np.float32)
         waypoints[:count, :dims] = raw[:count, :dims]
-        mask[:count] = False
-        return waypoints, mask
+        return waypoints
 
     def _default_task_waypoint(
         self,
@@ -349,9 +353,16 @@ class ClipWindowDataset(Dataset):
         return (angle + np.pi) % (2.0 * np.pi) - np.pi
 
 
-def collate_clip_samples(samples: list[dict[str, torch.Tensor]]) -> dict[str, torch.Tensor]:
+def collate_clip_samples(samples: list[dict[str, torch.Tensor]]) -> dict[str, torch.Tensor | list[torch.Tensor]]:
     keys = samples[0].keys()
-    return {key: torch.stack([sample[key] for sample in samples], dim=0) for key in keys}
+    batch: dict[str, torch.Tensor | list[torch.Tensor]] = {}
+    for key in keys:
+        values = [sample[key] for sample in samples]
+        if key == "task_waypoints":
+            batch[key] = values
+        else:
+            batch[key] = torch.stack(values, dim=0)
+    return batch
 
 
 def build_dataloader(

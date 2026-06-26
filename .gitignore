@@ -12,3 +12,6 @@ data/
 
 # 
 *.bak
+
+# experiment runs directory
+runs/
